@@ -1,0 +1,624 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto Cipher Tools</title>
+    <style>
+        :root {
+            --neon-green: #39ff14;
+            --terminal-green: #33ff33;
+            --dark-bg: #0a0a0a;
+            --panel-gray: #2b2b2b;
+            --switch-metal: #707070;
+            --gear-color: #333;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px var(--neon-green); }
+            50% { text-shadow: 0 0 20px var(--neon-green); }
+            100% { text-shadow: 0 0 5px var(--neon-green); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        body {
+            background: #000;
+            color: var(--terminal-green);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            animation: glow 2s infinite;
+        }
+        .gear {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: var(--gear-color);
+            border-radius: 50%;
+            animation: rotate 10s linear infinite;
+        }
+
+        .gear:before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: var(--gear-color);
+            left: 20px;
+        }
+
+        .gear:after {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 100%;
+            background: var(--gear-color);
+            top: 20px;
+        }
+
+        .gear-left { top: 20px; left: 20px; }
+        .gear-right { top: 20px; right: 20px; animation-direction: reverse; }
+        
+
+        .mainframe-panel {
+            background: var(--panel-gray);
+            border: 4px solid var(--switch-metal);
+            border-radius: 5px;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .control-section {
+            border: 2px solid var(--switch-metal);
+            padding: 15px;
+            background: #1a1a1a;
+        }
+
+        .switch-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .switch {
+            width: 40px;
+            height: 20px;
+            background: var(--switch-metal);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #ddd;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .switch.active::after {
+            transform: translateX(20px);
+            background: var(--terminal-green);
+        }
+
+        .monitor {
+            background: #000;
+            border: 3px solid var(--switch-metal);
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            color: var(--terminal-green);
+            text-shadow: 0 0 5px var(--terminal-green);
+            min-height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monitor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(51, 255, 51, 0.3);
+            animation: scanline 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+
+        select, input, textarea {
+            background: #000;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 8px;
+            width: 100%;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        button {
+            background: var(--switch-metal);
+            border: none;
+            color: #000;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--terminal-green);
+        }
+
+        .indicator-lights {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .light {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #333;
+            animation: blink 1s infinite;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-green);
+            white-space: pre-wrap;
+        }
+
+        .binary-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .binary-rain span {
+            color: var(--neon-green);
+            position: absolute;
+            font-size: 12px;
+            animation: rain linear infinite;
+        }
+        @keyframes rain {
+            0% { transform: translateY(-100%); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="binary-rain" id="binaryRain"></div>
+    <div class="container">
+        <div class="header">
+            <div class="gear gear-left"></div>
+            <h1>CRYPTOGRAPHIC OPERATIONS CENTER</h1>
+            <div class="gear gear-right"></div>
+        </div>
+    <div class="mainframe-panel">
+        <div class="control-section">
+            <h2>CIPHER CONFIGURATION</h2>
+            <div class="indicator-lights">
+                <div class="light" style="animation-delay: 0s"></div>
+                <div class="light" style="animation-delay: 0.2s"></div>
+                <div class="light" style="animation-delay: 0.4s"></div>
+            </div>
+            <select id="cipher-type" onchange="toggleOptions()">
+                <!-- Cipher options from previous version -->
+                <option value="caesar">Caesar Cipher</option>
+                <option value="vigenere">Vigenère Cipher</option>
+                <option value="railfence">Rail Fence Cipher</option>
+                <option value="des3">Triple DES</option>
+                <option value="aes">AES</option>
+                <option value="rsa">RSA</option>
+                <option value="twofish">Twofish</option>
+                <option value="pike">Pike Stream Cipher</option>
+                <option value="wake">WAKE Stream Cipher</option>
+                <option value="sober">SOBER Stream Cipher</option>
+                <option value="el-gamal">El Gamal</option>
+                <option value="diffie-hellman">Diffie-Hellman</option>
+                <option value="crystals-kyber">CRYSTALS-Kyber</option>
+                <option value="sphincs">SPHINCS+</option>
+                <option value="falcon">FALCON</option>
+            </select>
+            <div id="options"></div>
+            <div class="switch-panel">
+                <div class="switch"></div>
+                <div class="switch"></div>
+                <div class="switch"></div>
+                <div class="switch"></div>
+            </div>
+        </div>
+
+   
+
+        <div id="options">
+            <!-- Dynamic options will be inserted here -->
+        </div>
+
+        <div class="form-group">
+            <label for="action">Action:</label>
+            <select id="action">
+                <option value="encrypt">Encrypt</option>
+                <option value="decrypt">Decrypt</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <h2>DATA INPUT/OUTPUT</h2>
+            <div class="monitor">
+                <textarea id="input-text" rows="10" placeholder="ENTER MESSAGE"></textarea>
+            </div>
+            <button onclick="processText()">EXECUTE</button>
+            <div id="result" class="monitor"></div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.switch').forEach(switchElement => {
+            switchElement.addEventListener('click', () => {
+                switchElement.classList.toggle('active');
+            });
+        });
+
+        function toggleOptions() {
+            const cipherType = document.getElementById('cipher-type').value;
+            let optionsHTML = '';
+
+            const optionsMap = {
+                'caesar': `
+                    <div class="form-group">
+                        <label for="shift">Shift Amount:</label>
+                        <input type="number" id="shift" value="3">
+                    </div>
+                `,
+                'vigenere': `
+                    <div class="form-group">
+                        <label for="keyword">Keyword:</label>
+                        <input type="text" id="keyword">
+                    </div>
+                `,
+                'railfence': `
+                    <div class="form-group">
+                        <label for="rails">Number of Rails:</label>
+                        <input type="number" id="rails" value="3">
+                    </div>
+                `,
+                'des3': `
+                    <div class="form-group">
+                        <label for="key">Encryption Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                `,
+                'aes': `
+                    <div class="form-group">
+                        <label for="key">Encryption Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                    <div class="form-group">
+                        <label for="mode">Mode:</label>
+                        <select id="mode">
+                            <option value="ECB">ECB</option>
+                            <option value="CBC">CBC</option>
+                        </select>
+                    </div>
+                `,
+                'rsa': `
+                    <div class="form-group" id="key-generation">
+                        <button onclick="generateKeyPair()">Generate Key Pair</button>
+                        <div id="generated-keys" style="display:none;">
+                            <textarea id="public-key" readonly placeholder="Public Key"></textarea>
+                            <textarea id="private-key" readonly placeholder="Private Key"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="public-key-input">Public Key (for encryption):</label>
+                        <textarea id="public-key-input"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="private-key-input">Private Key (for decryption):</label>
+                        <textarea id="private-key-input"></textarea>
+                    </div>
+                `,
+                'twofish': `
+                    <div class="form-group">
+                        <label for="key">Encryption Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                `,
+                'pike': `
+                    <div class="form-group">
+                        <label for="key">Stream Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                `,
+                'wake': `
+                    <div class="form-group">
+                        <label for="key">Stream Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                `,
+                'sober': `
+                    <div class="form-group">
+                        <label for="key">Stream Key:</label>
+                        <input type="password" id="key">
+                    </div>
+                `,
+                'el-gamal': `
+                    <div class="form-group">
+                        <label for="key-size">Key Size:</label>
+                        <input type="number" id="key-size" value="2048">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="generateElGamalKeys()">Generate Keys</button>
+                    </div>
+                `,
+                'diffie-hellman': `
+                    <div class="form-group">
+                        <button onclick="generateDHKeyPair()">Generate Key Pair</button>
+                    </div>
+                `,
+                'crystals-kyber': `
+                    <div class="form-group">
+                        <label for="public-key">Public Key:</label>
+                        <textarea id="public-key"></textarea>
+                    </div>
+                `,
+                'sphincs': `
+                    <div class="form-group">
+                        <label for="private-key">Private Key:</label>
+                        <textarea id="private-key"></textarea>
+                    </div>
+                `,
+                'falcon': `
+                    <div class="form-group">
+                        <label for="private-key">Private Key:</label>
+                        <textarea id="private-key"></textarea>
+                    </div>
+                `
+            };
+            //document.getElementById('options').innerHTML = optionsHTML;
+            //Update action options based on cipher type
+            const actionSelect = document.getElementById('action');
+            actionSelect.innerHTML = ''; // Clear existing options
+
+            const actionOptions = {
+                'caesar': ['encrypt', 'decrypt'],
+                'vigenere': ['encrypt', 'decrypt'],
+                'railfence': ['encrypt', 'decrypt'],
+                'des3': ['encrypt', 'decrypt'],
+                'aes': ['encrypt', 'decrypt'],
+                'rsa': ['encrypt', 'decrypt'],
+                'twofish': ['encrypt', 'decrypt'],
+                'pike': ['encrypt', 'decrypt'],
+                'wake': ['encrypt', 'decrypt'],
+                'sober': ['encrypt', 'decrypt'],
+                'el-gamal': ['generate', 'encrypt', 'decrypt'],
+                'diffie-hellman': ['generate', 'exchange'],
+                'crystals-kyber': ['encrypt', 'decrypt'],
+                'sphincs': ['sign', 'verify'],
+                'falcon': ['sign', 'verify']
+            };
+
+            actionOptions[cipherType].forEach(action => {
+                const option = document.createElement('option');
+                option.value = action;
+                option.textContent = action.charAt(0).toUpperCase() + action.slice(1);
+                actionSelect.appendChild(option);
+            });
+
+            document.getElementById('options').innerHTML = optionsMap[cipherType] || '';
+
+
+        }
+
+        async function processText() {
+            const cipherType = document.getElementById('cipher-type').value;
+            const action = document.getElementById('action').value;
+            const inputText = document.getElementById('input-text').value;
+            const params = {};
+
+            switch (cipherType) {
+                case 'caesar':
+                    params.shift = parseInt(document.getElementById('shift').value);
+                    break;
+                case 'vigenere':
+                    params.keyword = document.getElementById('keyword').value;
+                    break;
+                case 'railfence':
+                    params.rails = parseInt(document.getElementById('rails').value);
+                    break;
+                case 'des3':
+                case 'twofish':
+                case 'pike':
+                case 'wake':
+                case 'sober':
+                    params.key = document.getElementById('key').value;
+                    break;
+                case 'aes':
+                    params.key = document.getElementById('key').value;
+                    params.mode = document.getElementById('mode').value;
+                    break;
+                case 'rsa':
+                    if (action === 'encrypt') {
+                        params.publicKey = document.getElementById('public-key-input').value;
+                    } else {
+                        params.privateKey = document.getElementById('private-key-input').value;
+                    }
+                    break;
+                case 'el-gamal':
+                    if (action === 'generate') {
+                        params.keySize = parseInt(document.getElementById('key-size').value);
+                    }
+                    break;
+                case 'crystals-kyber':
+                    params.publicKey = document.getElementById('public-key').value;
+                    break;
+                case 'sphincs':
+                case 'falcon':
+                    params.privateKey = document.getElementById('private-key').value;
+                    break;
+            }
+
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cipherType,
+                        action,
+                        text: inputText,
+                        params
+                    })
+                });
+                const data = await response.json();
+        
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `
+                        <div style="color: #ff4444;">
+                            Error: ${data.message}
+                        </div>`;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <div>
+                            <strong>Result:</strong><br>
+                            ${data.result}<br><br>
+                            <small>Processed using ${data.algorithm} (${data.action}) at ${new Date(data.timestamp).toLocaleString()}</small>
+                        </div>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="color: #ff4444;">
+                        Error: ${error.message}
+                    </div>`;
+            }
+        }
+
+        async function generateElGamalKeys() {
+            const keySize = document.getElementById('key-size').value;
+            const response = await fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cipherType: 'el-gamal',
+                    action: 'generate',
+                    text: '',
+                    params: { keySize }
+                })
+            });
+
+            const data = await response.json();
+            if (data.result) {
+                document.getElementById('result').innerHTML = `
+                    <div>
+                        <strong>Generated El Gamal Keys:</strong><br>
+                        <pre>${JSON.stringify(data.result, null, 2)}</pre>
+                    </div>`;
+            }
+        }
+
+        async function generateDHKeyPair() {
+            const response = await fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cipherType: 'diffie-hellman',
+                    action: 'generate',
+                    text: '',
+                    params: {}
+                })
+            });
+
+            const data = await response.json();
+            if (data.result) {
+                document.getElementById('result').innerHTML = `
+                    <div>
+                        <strong>Generated Diffie-Hellman Key Pair:</strong><br>
+                        <pre>${JSON.stringify(data.result, null, 2)}</pre>
+                    </div>`;
+            }
+        }
+        // Create binary rain effect
+        function createBinaryRain() {
+            const rain = document.getElementById('binaryRain');
+            const characters = '01';
+            
+            setInterval(() => {
+                const span = document.createElement('span');
+                span.textContent = characters.charAt(Math.floor(Math.random() * characters.length));
+                span.style.left = Math.random() * 100 + '%';
+                span.style.animationDuration = Math.random() * 3 + 2 + 's';
+                rain.appendChild(span);
+                
+                setTimeout(() => span.remove(), 5000);
+            }, 100);
+        }
+
+        document.addEventListener('DOMContentLoaded', createBinaryRain);
+
+
+        // Initialize options on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleOptions();
+            document.getElementById('action').addEventListener('change', toggleOptions);
+            document.getElementById('cipher-type').addEventListener('change', toggleOptions);
+        });
+
+            
+    </script>
+</body>
+</html>
