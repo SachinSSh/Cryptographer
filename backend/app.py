@@ -1,6 +1,8 @@
 # backend/app.py
 import datetime
 import traceback
+import struct
+import secrets
 from flask import Flask, render_template, request, jsonify
 import base64
 import hashlib
@@ -16,11 +18,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec, x25519, padding
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
-
-
-import struct
-import secrets
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ed25519, x25519
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
