@@ -1,9 +1,10 @@
 # backend/app.py
+
+import os
 import datetime
 import traceback
 import struct
 import secrets
-from flask import Flask, render_template, request, jsonify
 import base64
 import hashlib
 from Crypto.Cipher import DES3, AES, Blowfish
@@ -12,8 +13,6 @@ from Crypto.PublicKey import RSA, ECC
 from Crypto.Hash import SHA256
 from cryptography.hazmat.primitives.asymmetric import x25519
 from flask import Flask, render_template, request, jsonify
-
-import os
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, dsa, ec, x25519, padding
