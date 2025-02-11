@@ -11,7 +11,6 @@ from Crypto.Cipher import DES3, AES, Blowfish
 from Crypto.PublicKey import RSA, ECC
 #from Crypto.Signature import DSA, pkcs1_15
 from Crypto.Hash import SHA256
-from cryptography.hazmat.primitives.asymmetric import x25519
 from flask import Flask, render_template, request, jsonify
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import hashes, serialization
